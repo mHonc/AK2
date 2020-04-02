@@ -1,0 +1,64 @@
+.data
+ 
+.text
+# Zadeklarowane tutaj funkcje będą możliwe do wykorzystania
+# w języku C po zlinkowaniu plików wynikowych kompilacji obu kodów
+.global szyfr_cezara
+.type szyfr_cezara, @function
+ 
+#
+# Funkcja szyfrująca podany ciąg znaków szyfrem cezara
+# z przesunięciem o 3
+#
+# Deklaracja w C: szyfr_cezara(&txt, len);
+#
+szyfr_cezara:
+    # Odłożenie rejestru bazowego na stos i skopiwanie obecnej
+    # wartości wskaźnika stosu do rejestru bazowego
+    push %rbp
+    mov %rsp, %rbp
+ 
+    # Parametry wywołania funkcji umieszczone zostaną
+    # w rejestach RDI i RSI.
+    # * W rejestrze RDI znajdzie się wskaźnik na pierwszą
+    # komórkę stringa.
+    # * W rejestrze RSI znajdzie się długość tego stringa.
+ 
+    # Pętla wykonująca się dla każdego znaku
+    mov $0, %rax
+    petla_glowna:
+ 
+        # Skopiowanie n-tego znaku stringa do rejestru BL
+        mov (%rdi, %rax, 1), %bl
+ 
+        # Wykonanie szyfrowania
+        cmp $'Z', %bl
+        jle duze
+ 
+        male:
+            add $3, %bl
+            cmp $'z', %bl
+            jle zapisz
+            sub $26, %bl
+            jmp zapisz
+ 
+        duze:
+            add $3, %bl
+            cmp $'Z', %bl
+            jle zapisz
+            sub $26, %bl
+ 
+        # Zapis zaszyfrowanego znaku do stringa
+        zapisz:
+        mov %bl, (%rdi, %rax, 1)
+ 
+    # Instrukcje sterujące dla pętli
+    inc %rax
+    cmp %rsi, %rax
+    jl petla_glowna
+ 
+    # Przywrócenie poprzedniej wartości rejestru bazowego
+    # i wskaźnika stosu
+    mov %rbp, %rsp
+    pop %rbp
+ret # Powrót do miejsca wywołania funkcji
